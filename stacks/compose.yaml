@@ -30,22 +30,40 @@ services:
       - web1
       - web2
       - web3
-    networks:
-      - ngrok
-  ngrok:
-    image: ngrok/ngrok:latest
-    restart: unless-stopped
-    command:
-      - "start"
-      - "--all"
-      - "--config"
-      - "/etc/ngrok.yml"
+      - backend
+
+  backend:
+    build:
+      context: backend
+      target: builder
+    secrets:
+      - db-password
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: postgres
+    restart: always
+    user: postgres
+    secrets:
+      - db-password
     volumes:
-      - ./ngrok/ngrok.yml:/etc/ngrok.yml
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=example
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
     ports:
-      - 4040:4040
-    networks:
-      - ngrok
-networks:
-  ngrok:
-    driver: bridge
+      - 5433:5432
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  db-data:
+
+secrets:
+  db-password:
+    file: db/password.txt
