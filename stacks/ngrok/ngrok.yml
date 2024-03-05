@@ -1,0 +1,11 @@
+authtoken: 1guK0BduFejZQu5iB2b99pfYRsq_2Zs4st5x7L29UcaKskSLk
+version: 2
+region: ap
+web_addr: 0.0.0.0:4040
+tunnels:
+  website:
+    addr: '172.26.241.183:80'
+    proto: http
+  ssh-access:
+    addr: '172.26.241.183:22'
+    proto: tcp
