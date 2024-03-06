@@ -16,6 +16,16 @@ services:
       - 9100:9100
     networks:
       - monitoring
+  postgres-exporter:
+    container_name: postgres-exporter
+    image: quay.io/prometheuscommunity/postgres-exporter
+    # network_mode: host
+    environment:
+      - DATA_SOURCE_NAME=postgresql://postgres:db-frknz@db:5433/wgs_seskotni?sslmode=disable
+    ports:
+      - "9187:9187"
+    networks:
+      - monitoring
   prometheus:
     image: prom/prometheus
     container_name: prometheus
@@ -33,7 +43,7 @@ services:
     image: grafana/grafana
     container_name: grafana
     ports:
-      - 3000:3000
+      - 4000:3000
     restart: unless-stopped
     environment:
       - GF_SECURITY_ADMIN_USER=admin
@@ -42,8 +52,32 @@ services:
       - ./grafana:/etc/grafana/provisioning/datasources
     networks:
       - monitoring
+  db:
+    image: postgres
+    restart: always
+    user: postgres
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=example
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db-password
+    ports:
+      - 5433:5432
+    healthcheck:
+      test: [ "CMD", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - monitoring
 volumes:
   prom_data:
+  db-data:
 networks:
   monitoring:
     driver: bridge
+secrets:
+  db-password:
+    file: db/password.txt
