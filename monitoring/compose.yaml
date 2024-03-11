@@ -105,11 +105,14 @@ services:
     depends_on:
       - backend
   backend:
+    restart: on-failure
     container_name: backend
     labels:
       logging: "promtail"
       logging_jobname: "backend"
-    image: monitoring-backend:2
+    build:
+      context: backend
+      target: builder
     secrets:
       - db-password
     depends_on:
