@@ -104,16 +104,16 @@ services:
       - loki
     depends_on:
       - backend
-  backend1:
+  backend:
     restart: on-failure
-    container_name: backend-1
+    container_name: backend
     labels:
       logging: "promtail"
       logging_jobname: "backend"
     build: ./backend
     secrets:
       - db-password
-    hostname: backend1
+    hostname: backend
     ports:
       - '81:5000'
     depends_on:
